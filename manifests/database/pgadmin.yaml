@@ -1,0 +1,55 @@
+# pgAdmin Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: axion-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+        - name: pgadmin
+          image: dpage/pgadmin4:latest
+          ports:
+            - containerPort: 80    
+
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: secret-db
+                  key: PGADMIN_DEFAULT_EMAIL
+
+            - name: PGADMIN_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secret-db
+                  key: PGADMIN_DEFAULT_PASSWORD
+                  
+            - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+              value: "False"
+
+            
+
+---
+# pgAdmin Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-service
+  namespace: axion-app
+spec:
+  selector:
+    app: pgadmin
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP  
+
